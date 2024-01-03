@@ -1,11 +1,21 @@
 <script setup>
 import { Icon } from '@iconify/vue';
-import { ref } from "vue";
+import { ref, watch, computed } from "vue";
 import { uid}  from "uid";
 import TodoCreator from '@/components/TodoCreator.vue';
 import TodoItem from "@/components/TodoItem.vue";
 
 const todoList = ref([]);
+
+watch(todoList, () => {
+  setTodoListLocalStorage();
+}, {
+  deep: true,
+})
+
+const todoCompleted = computed(() => {
+  return todoList.value.every((todo) => todo.isCompleted);
+})
 
 const fetchTodoList = () => {
   const savedTodoList = JSON.parse(localStorage.getItem("todoList"));
@@ -27,27 +37,22 @@ const createTodo = (todo) => {
     isCompleted: false,
     isEditing: null,
   });
-  setTodoListLocalStorage();
 };
 
 const toggleEditTodo = (todoPos) => {
   todoList.value[todoPos].isEditing = !todoList.value[todoPos].isEditing;
-  setTodoListLocalStorage();
 };
 
 const updateTodo = (todoVal, todoPos) => {
   todoList.value[todoPos].todo = todoVal;
-  setTodoListLocalStorage();
 };
 
 const deleteTodo = (todoId) => {
   todoList.value = todoList.value.filter((todo)=> todo.id !== todoId);
-  setTodoListLocalStorage();
 };
 
 const toggleTodoComplete = (todoPos) =>{
   todoList.value[todoPos].isCompleted = !todoList.value[todoPos].isCompleted;
-  setTodoListLocalStorage();
 };
 </script>
 
@@ -67,6 +72,10 @@ const toggleTodoComplete = (todoPos) =>{
     </ul>
     <p class="todos-msg" v-else><Icon icon="noto:sad-but-relieved-face" width="22" />
       <span>Gaada Hal yang mau dilakukan, tambahin sana!</span>
+    </p>
+    <p v-if="todoCompleted && todoList.length > 0" class="todos-msg">
+    <Icon icon="noto:party-popper" width="22" />
+    <span>Semua Todo telah dilaksanakan wuhuu!</span>
     </p>
   </main>
 </template>
